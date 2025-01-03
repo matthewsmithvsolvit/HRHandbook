@@ -91,21 +91,33 @@ See https://github.com/adobe-type-tools/cmap-resources
           "web-toolbar": "./toolbar.js"
         }
       }
-      <script>
-        document.addEventListener('DOMContentLoaded', () => {
-          const urlParams = new URLSearchParams(window.location.search);
-          const file = urlParams.get('file');
-          const page = urlParams.get('page');
-      
-          if (file) {
-            PDFViewerApplication.open(file);
-          }
-          if (page) {
-            PDFViewerApplication.initialBookmark = `page=${page}`;
-          }
-        });
-      </script>
+     
   </script>
+  <script type="module">
+    import { PDFViewerApplication } from "pdfjs-web/pdf_viewer.js";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Get query parameters from the URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const file = urlParams.get("file"); // PDF file name or path
+      const page = urlParams.get("page"); // Specific page number
+
+      // Check if the 'file' parameter exists
+      if (file) {
+        PDFViewerApplication.open(file); // Load the specified PDF file
+      }
+
+      // Navigate to the specific page after the document is loaded
+      if (page) {
+        PDFViewerApplication.eventBus.on("documentload", () => {
+          const pageNumber = parseInt(page, 10); // Convert page to an integer
+          PDFViewerApplication.pdfViewer.currentPageNumber = pageNumber; // Navigate to the page
+        });
+      }
+    });
+  </script>
+
+
   <script src="viewer.js" type="module"></script>
   <!--#endif-->
 </head>
