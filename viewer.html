@@ -1,0 +1,26 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Viewer</title>
+</head>
+
+<body>
+  <h1>HR Handbook Viewer</h1>
+  <iframe id="pdf-viewer" width="100%" height="800px">
+  </iframe>
+
+  <script>
+    // Extract 'page' parameter from the URL query string
+    const urlParams = new URLSearchParams(window.location.search);
+    const page = urlParams.get('page') || 1; // Default to page 1 if no page is specified
+
+    // Set the iframe source dynamically
+    const iframe = document.getElementById('pdf-viewer');
+    iframe.src = `https://matthewsmithvsolvit.github.io/HRHandbook/HRHandbook.pdf#page=${page}`;
+  </script>
+</body>
+
+</html>
