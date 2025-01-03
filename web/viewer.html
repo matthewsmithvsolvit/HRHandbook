@@ -1,52 +1,38 @@
 ﻿<!DOCTYPE html>
-<html dir="ltr">
+<html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>PDF.js Viewer</title>
-  <link rel="stylesheet" href="viewer.css">
-
-  <!-- Import Map -->
-  <script type="importmap">
-      {
-        "imports": {
-          "pdfjs-web/": "./",
-          "pdfjs-lib": "../src/pdf.js"
-        }
-      }
-  </script>
-
-  <!-- Navigation Script -->
-  <script type="module">
-    import { PDFViewerApplication } from "pdfjs-web/pdf_viewer.js";
-
-    document.addEventListener("DOMContentLoaded", () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const file = urlParams.get("file");
-      const page = parseInt(urlParams.get("page"), 10);
-
-      if (file) {
-        PDFViewerApplication.open(file); // Load the specified PDF
-      }
-
-      if (!isNaN(page)) {
-        PDFViewerApplication.eventBus.on("documentload", () => {
-          PDFViewerApplication.pdfViewer.currentPageNumber = page; // Navigate to the specific page
-        });
-      }
-    });
-  </script>
-
-  <!-- Main Viewer -->
-  <script src="viewer.js" type="module"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Viewer</title>
+  <script src="pdfjs.js"></script>
 </head>
 
 <body>
-  <!-- Viewer Container -->
-  <div id="viewerContainer">
-    <div id="viewer" class="pdfViewer"></div>
-  </div>
+  <canvas id="pdfCanvas"></canvas>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const file = urlParams.get('file') || 'HRHandbook.pdf'; // Default file
+    const page = parseInt(urlParams.get('page'), 10) || 1; // Default page
+
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.js';
+
+    const canvas = document.getElementById('pdfCanvas');
+    const ctx = canvas.getContext('2d');
+
+    pdfjsLib.getDocument(file).promise.then(pdf => {
+      pdf.getPage(page).then(page => {
+        const viewport = page.getViewport({ scale: 1 });
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        page.render({ canvasContext: ctx, viewport: viewport });
+      });
+    }).catch(error => {
+      console.error('Error loading PDF:', error);
+    });
+  </script>
 </body>
 
 </html>
