@@ -5,33 +5,78 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PDF Viewer</title>
-  <script src="pdfjs.js"></script>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    #viewerContainer {
+      flex: 1;
+      overflow: auto;
+      position: relative;
+      background: #f0f0f0;
+    }
+
+    canvas {
+      display: block;
+      margin: 0 auto;
+    }
+  </style>
 </head>
 
 <body>
-  <canvas id="pdfCanvas"></canvas>
-  <script>
+  <div id="viewerContainer"></div>
+
+  <script type="module">
+    import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js';
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
+
     const urlParams = new URLSearchParams(window.location.search);
-    const file = urlParams.get('file') || 'HRHandbook.pdf'; // Default file
-    const page = parseInt(urlParams.get('page'), 10) || 1; // Default page
+    const file = urlParams.get('file'); // e.g., "HRHandbook.pdf"
+    const pageNumber = parseInt(urlParams.get('page'), 10) || 1;
 
-    const pdfjsLib = window['pdfjs-dist/build/pdf'];
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.js';
+    const viewerContainer = document.getElementById('viewerContainer');
 
-    const canvas = document.getElementById('pdfCanvas');
-    const ctx = canvas.getContext('2d');
+    const renderPage = async (pdf, num) => {
+      const page = await pdf.getPage(num);
 
-    pdfjsLib.getDocument(file).promise.then(pdf => {
-      pdf.getPage(page).then(page => {
-        const viewport = page.getViewport({ scale: 1 });
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
+      const viewport = page.getViewport({ scale: 1.5 });
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
 
-        page.render({ canvasContext: ctx, viewport: viewport });
-      });
-    }).catch(error => {
-      console.error('Error loading PDF:', error);
-    });
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      viewerContainer.innerHTML = ''; // Clear previous pages
+      viewerContainer.appendChild(canvas);
+
+      const renderContext = {
+        canvasContext: context,
+        viewport: viewport,
+      };
+
+      await page.render(renderContext).promise;
+    };
+
+    const loadPDF = async (filePath) => {
+      try {
+        const pdf = await pdfjsLib.getDocument(filePath).promise;
+        await renderPage(pdf, pageNumber);
+      } catch (error) {
+        console.error('Error loading PDF:', error);
+        viewerContainer.innerHTML = '<p style="text-align: center; color: red;">Failed to load PDF.</p>';
+      }
+    };
+
+    if (file) {
+      loadPDF(file);
+    } else {
+      viewerContainer.innerHTML = '<p style="text-align: center; color: red;">No file specified.</p>';
+    }
   </script>
 </body>
 
