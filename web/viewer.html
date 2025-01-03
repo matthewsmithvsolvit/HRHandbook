@@ -4,90 +4,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PDF Viewer</title>
+  <title>HR HANDBOOK PDF</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <style>
     body {
       margin: 0;
       display: flex;
-      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       height: 100vh;
-    }
-
-    #viewerContainer {
-      flex: 1;
-      overflow: auto;
-      position: relative;
-      background: #f0f0f0;
+      background-color: #f5f5f5;
     }
 
     canvas {
-      display: block;
-      margin: 0 auto;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
 
 <body>
-  <div id="viewerContainer"></div>
+  <canvas id="pdf-render"></canvas>
 
   <script>
-    const PDFJS_LIB_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js";
-    const PDFJS_WORKER_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+    const urlParams = new URLSearchParams(window.location.search);
+    const file = urlParams.get('file'); // Path to the PDF file
+    const page = parseInt(urlParams.get('page'), 10); // Page number
 
-    // Dynamically load the PDF.js library
-    const script = document.createElement("script");
-    script.src = PDFJS_LIB_URL;
-    script.onload = () => {
-      const pdfjsLib = window.pdfjsLib;
-      pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
+    // Validate input
+    if (!file || isNaN(page)) {
+      document.body.innerHTML = '<p style="color: red;">Invalid or missing file/page parameters.</p>';
+      throw new Error("Missing 'file' or 'page' parameter in URL.");
+    }
 
-      // Get query parameters
-      const urlParams = new URLSearchParams(window.location.search);
-      const file = urlParams.get("file");
-      const pageNumber = parseInt(urlParams.get("page"), 10) || 1;
+    const canvas = document.getElementById("pdf-render");
+    const ctx = canvas.getContext("2d");
 
-      const viewerContainer = document.getElementById("viewerContainer");
+    const renderPDF = async (filePath, pageNumber) => {
+      try {
+        // Load the PDF
+        const pdf = await pdfjsLib.getDocument(filePath).promise;
+        const pdfPage = await pdf.getPage(pageNumber);
 
-      const renderPage = async (pdf, num) => {
-        const page = await pdf.getPage(num);
-
-        const viewport = page.getViewport({ scale: 1.5 });
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-
+        // Set canvas dimensions to match the PDF page
+        const viewport = pdfPage.getViewport({ scale: 1.5 });
         canvas.width = viewport.width;
         canvas.height = viewport.height;
 
-        viewerContainer.innerHTML = ""; // Clear previous content
-        viewerContainer.appendChild(canvas);
-
-        const renderContext = {
-          canvasContext: context,
-          viewport: viewport,
-        };
-
-        await page.render(renderContext).promise;
-      };
-
-      const loadPDF = async (filePath) => {
-        try {
-          const pdf = await pdfjsLib.getDocument(filePath).promise;
-          await renderPage(pdf, pageNumber);
-        } catch (error) {
-          console.error("Error loading PDF:", error);
-          viewerContainer.innerHTML =
-            '<p style="text-align: center; color: red;">Failed to load PDF.</p>';
-        }
-      };
-
-      if (file) {
-        loadPDF(file);
-      } else {
-        viewerContainer.innerHTML =
-          '<p style="text-align: center; color: red;">No file specified.</p>';
+        // Render the page onto the canvas
+        const renderContext = { canvasContext: ctx, viewport: viewport };
+        await pdfPage.render(renderContext).promise;
+      } catch (err) {
+        console.error("Error rendering PDF:", err);
+        document.body.innerHTML = '<p style="color: red;">Failed to load the PDF file.</p>';
       }
     };
-    document.head.appendChild(script);
+
+    // Call the function to render the specified PDF page
+    renderPDF(file, page);
   </script>
 </body>
 
