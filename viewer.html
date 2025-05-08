@@ -1,29 +1,24 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PDF Viewer</title>
 </head>
-
 <body>
   <h1>Employee Handbook Viewer</h1>
-  <iframe id="pdf-viewer" width="100%" height="800px">
-  </iframe>
+  <iframe id="pdf-viewer" width="100%" height="800px"></iframe>
 
   <script>
-  const urlParams = new URLSearchParams(window.location.search);
-  const page = urlParams.get('page') || 1;
-  const file = urlParams.get('file') || 'HR.02.00.POL - Employee Handbook 2025 .pdf';
+    // Extract 'page' and 'file' parameters from the URL query string
+    const urlParams = new URLSearchParams(window.location.search);
+    const page = urlParams.get('page') || 1;
+    const file = urlParams.get('file') || 'HR.02.00.POL - Employee Handbook 2025 .pdf';
 
-  // Base URL of your GitHub Pages docs folder
-  const baseUrl = 'https://matthewsmithvsolvit.github.io/HRHandbook/docs/';
-  
-  // Build full URL
-  const iframe = document.getElementById('pdf-viewer');
-  iframe.src = `${baseUrl}${encodeURIComponent(file)}#page=${page}`;
+    // Construct the full URL to the PDF hosted on GitHub Pages
+    const baseUrl = 'https://matthewsmithvsolvit.github.io/HRHandbook/docs/';
+    const iframe = document.getElementById('pdf-viewer');
+    iframe.src = `${baseUrl}${encodeURIComponent(file)}#page=${page}`;
   </script>
 </body>
-
 </html>
