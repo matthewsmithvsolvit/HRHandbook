@@ -13,14 +13,16 @@
   </iframe>
 
   <script>
-    // Extract 'page' parameter from the URL query string
-    const urlParams = new URLSearchParams(window.location.search);
-    const page = urlParams.get('page') || 1;
-    const file = urlParams.get('file') || 'docs/HR.02.00.POL - Employee Handbook 2025 .pdf';
+  const urlParams = new URLSearchParams(window.location.search);
+  const page = urlParams.get('page') || 1;
+  const file = urlParams.get('file') || 'HR.02.00.POL - Employee Handbook 2025 .pdf';
 
-    // Set the iframe source dynamically
-    const iframe = document.getElementById('pdf-viewer');
-    iframe.src = `${file}#page=${page}`;
+  // Base URL of your GitHub Pages docs folder
+  const baseUrl = 'https://matthewsmithvsolvit.github.io/HRHandbook/docs/';
+  
+  // Build full URL
+  const iframe = document.getElementById('pdf-viewer');
+  iframe.src = `${baseUrl}${encodeURIComponent(file)}#page=${page}`;
   </script>
 </body>
 
